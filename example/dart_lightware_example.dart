@@ -1,4 +1,4 @@
-import 'package:lightware/lightware.dart';
+import 'package:dart_lightware/dart_lightware.dart';
 
 void main() {
   var awesome = Awesome();

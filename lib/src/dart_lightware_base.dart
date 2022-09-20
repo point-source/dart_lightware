@@ -1,10 +1,8 @@
-import 'dart:io';
-
 class Lightware {
-  Lightware(this.target, {this.port = 6107});
+  Lightware(this.host, {this.port = 6107});
 
-  InternetAddress target;
-  int port;
+  final String host;
+  final int port;
 
   String _get(String path, String method) {}
 

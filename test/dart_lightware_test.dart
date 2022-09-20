@@ -1,12 +1,12 @@
-import 'package:lightware/lightware.dart';
+import 'package:dart_lightware/dart_lightware.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('A group of tests', () {
-    Awesome awesome;
+    final awesome = Awesome();
 
     setUp(() {
-      awesome = Awesome();
+      // Additional setup goes here.
     });
 
     test('First Test', () {
