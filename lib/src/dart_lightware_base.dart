@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:tcp_client_dart/tcp_client_dart.dart';
 
@@ -58,7 +59,17 @@ class Lightware {
     final signature = _getSignature();
     final completer = Completer<List<String>>();
     _requests[signature] = completer;
-    (await client).send('$signature#$command');
+    try {
+      (await client).send('$signature#$command');
+    } on SocketException catch (e) {
+      if (e.osError?.errorCode == 54) {
+        // Connection reset by peer
+        await disconnect();
+        (await client).send('$signature#$command');
+      } else {
+        rethrow;
+      }
+    }
 
     return await completer.future;
   }
