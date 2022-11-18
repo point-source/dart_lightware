@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dart_lightware/src/models/connection_state.dart';
 import 'package:tcp_client_dart/tcp_client_dart.dart';
 
 class Lightware {
@@ -11,19 +12,44 @@ class Lightware {
 
   TcpClient? _client;
 
+  final StreamController<LightwareConnectionState> _stateCtrl =
+      StreamController();
+
+  Stream<LightwareConnectionState> get connectionState => _stateCtrl.stream;
+
+  String _error = '';
+
   Future<TcpClient> get client async {
-    if (_client == null) {
-      _client = await TcpClient.connect(
-        host,
-        port,
-        terminatorString: '\r\n',
-        connectionType: TcpConnectionType.persistent,
-      );
+    return runZonedGuarded(
+      () async {
+        if (_client == null) {
+          _client = await TcpClient.connectPersistent(
+            host,
+            port,
+            terminatorString: '\r\n',
+          );
 
-      _client!.stringStream.listen(_handleEvent);
-    }
+          _client!.stringStream
+              .listen(_handleEvent, onError: (e) => _error = e.toString());
 
-    return _client!;
+          _client!.connectionStream.listen((event) {
+            _stateCtrl.add(LightwareConnectionState(
+              event.toLightwareConnectionState(),
+              errorMessage: _error,
+            ));
+          });
+        }
+
+        return _client!;
+      },
+      (e, s) async {
+        _stateCtrl.add(LightwareConnectionState(
+          ConnectionState.failed,
+          errorMessage: e.toString(),
+        ));
+        await disconnect();
+      },
+    )!;
   }
 
   int _requestCount = 0;
@@ -51,6 +77,7 @@ class Lightware {
       return;
     }
     _responseCache.add(event);
+    _error = '';
   }
 
   /// Sends a raw command string to the Lightware device and returns
@@ -104,6 +131,11 @@ class Lightware {
 
   Future<void> disconnect() async {
     await _client?.close();
+    for (var e in _requests.values) {
+      e.completeError(
+        'Connection was closed before the request could be completed.',
+      );
+    }
     _requests.clear();
     _requestCount = 0;
     _responseCache.clear();
