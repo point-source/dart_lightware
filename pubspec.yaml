@@ -1,5 +1,5 @@
 name: dart_lightware
-description: A dart library for controlling lightware devices.
+description: A dart library for controlling lightware devices over a network
 version: 1.1.0
 homepage: https://github.com/point-source/dart_lightware
 

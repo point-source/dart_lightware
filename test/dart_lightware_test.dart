@@ -2,15 +2,11 @@ import 'package:dart_lightware/dart_lightware.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('A group of tests', () {
-    final awesome = Awesome();
+  group('Init: ', () {
+    final lightware = Lightware('10.10.10.10');
 
-    setUp(() {
-      // Additional setup goes here.
-    });
-
-    test('First Test', () {
-      expect(awesome.isAwesome, isTrue);
+    test('Instance', () {
+      expect(lightware, isA<Lightware>());
     });
   });
 }

@@ -1,39 +1,58 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+A dart library for controlling lightware devices over a network socket
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Persistent connection which can auto-reconnect when dropped or failed
+- Commands are sent and matched with IDs to allow async send/receive
+- Supports multiline receive
 
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+### Supported commands
+[x] Get
+[x] Set
+[x] Call
+[x] Man
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
 ```dart
-const like = 'sample';
+import 'dart:async';
+
+import 'package:dart_lightware/dart_lightware.dart';
+
+Future<void> main() async {
+  /// New lightware instance
+  var lightware = Lightware('10.10.10.10');
+
+  /// Print current connection states
+  final sub = lightware.connectionState.listen(print);
+
+  /// Get status of video input 7
+  final r = await lightware.get(
+    '/MEDIA/PORTS/VIDEO/STATUS/I7',
+    property: 'SignalPresent',
+  );
+
+  /// Print telnet output from lightware
+  for (var e in r) {
+    print(e);
+  }
+
+  /// Route input 7 to output 13
+  await lightware.call('/MEDIA/XP/VIDEO', 'switch', ['I7:O13']);
+
+  // Cancel subscription
+  sub.cancel();
+}
+
 ```
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+Issues and feature requests can be filed [here][2].
+
+Library was created according to the [Lightware API documentation][3]
+
+[1]: https://pub.dev/packages/dart_lightware
+[2]: https://github.com/point-source/dart_lightware/issues
+[3]: https://lightware.com/pub/media/lightware/filedownloader/file/White-Paper/Lightware_s_Open_API_Environment_v3.pdf
+
